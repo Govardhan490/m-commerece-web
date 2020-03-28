@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Amita' rel='stylesheet'>
+</head>
+
+<body style="background-color: rgb(255, 255, 128);">
+
+    <div class="container p-5">
+        <div class="card">
+            <div class="card-header p-3" style="font-family: Amita;text-align:center;">
+                <h1 class="display-4"><b><i>Sign Up</i></b></h1>
+            </div>
+            <div class="card-body">
+                <form id="form">
+                    <div class="form-group">
+                        <input type="email" maxlength="30" class="form-control" id="email" placeholder="Email" name="email" required>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <input type="text" id="company_name" maxlength="50" class="form-control" placeholder="Company/Vendor Name" name="company_name" required>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="col">
+                            <input type="password" id="password" class="form-control" placeholder="Password" name="password" required>
+                        </div>
+                        <div class="col">
+                            <input type="password" id="confirm_password" onkeyup="validate_password()" class="form-control" placeholder="Confirm Password" name="confirm_password" required>
+                            <div class="invalid-feedback">Password doesnt match.</div>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="col">
+                            <input type="tel" id="ph_no" maxlength="10" class="form-control" pattern="[0-9].{9}" placeholder="Phone Number" name="phone_number" required>
+                        </div>
+                    </div>
+                    <br>
+                    <button type="button" onclick="sign_up()" class="btn btn-primary">Sign Up</button>
+                </form>
+                <br>
+                <div>Already a member? <a href="/index.html">Login Now!</a></div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-analytics.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-storage.js"></script>
+
+<script>
+    var firebaseConfig = {
+        apiKey: "AIzaSyDXbuRTYEYi4K2RGArOhE5RCMZYFk7_eo4",
+        authDomain: "m-commerce-7f35b.firebaseapp.com",
+        databaseURL: "https://m-commerce-7f35b.firebaseio.com",
+        projectId: "m-commerce-7f35b",
+        storageBucket: "m-commerce-7f35b.appspot.com",
+        messagingSenderId: "223447659597",
+        appId: "1:223447659597:web:65e690fc71be14ac6c9804",
+        measurementId: "G-K37YV1YNV6"
+    };
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+</script>
+
+<script>
+    function ValidateEmail(mail) {
+        var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        var inputText = $("#email").val();
+        if (inputText.match(mailformat)) {
+            $("#email").removeClass("is-invalid");
+            $("#email").addClass("is-valid");
+            return (true)
+        } else {
+            $("#email").addClass("is-invalid");
+            return (false)
+        }
+    }
+
+    function validate_password() {
+        var pass = $("#password").val();
+        var confirm = $("#confirm_password").val();
+        if (pass == "") {
+            $("#confirm_password").addClass("is-invalid");
+            return false;
+        }
+        if (pass != confirm) {
+            $("#confirm_password").addClass("is-invalid");
+            return flase;
+        } else {
+            $("#confirm_password").removeClass("is-invalid");
+            $("#confirm_password").addClass("is-valid");
+            return true;
+        }
+    }
+
+    function vaidate_companyname() {
+        var name = $("#company_name").val();
+        if (name.length < 6) {
+            $("#company_name").addClass("is-invalid");
+            return false;
+        } else {
+            $("#company_name").removeClass("is-invalid");
+            $("#company_name").addClass("is-valid");
+            return true;
+        }
+    }
+
+    function validate_phone() {
+        var phoneno = /^\d{10}$/;
+        var inputtxt = $("#ph_no").val()
+        if (inputtxt.match(phoneno)) {
+            $("#ph_no").removeClass("is-invalid");
+            $("#ph_no").addClass("is-valid");
+            return true;
+        } else {
+            $("#ph_no").addClass("is-invalid");
+            return false;
+        }
+    }
+
+    function sign_up() {
+        if (ValidateEmail() && vaidate_companyname() && validate_password() && validate_phone()) {
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .catch(function(error) {
+                    // Handle Errors here.
+                    var errorCode = error.code;
+                    var errorMessage = error.message;
+                    if (errorCode == 'auth/weak-password') {
+                        alert('The password is too weak.');
+                    } else {
+                        alert(errorMessage);
+                    }
+                    console.log(error);
+                });
+        } else {
+            alert("Please fill all the details correctly");
+        }
+    }
+</script>
+
+
+</html>
