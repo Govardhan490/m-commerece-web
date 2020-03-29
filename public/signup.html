@@ -13,7 +13,27 @@
     <link href='https://fonts.googleapis.com/css?family=Amita' rel='stylesheet'>
 </head>
 
-<body style="background-color: rgb(255, 255, 128);">
+<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-analytics.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-storage.js"></script>
+
+<script>
+    var firebaseConfig = {
+        apiKey: "AIzaSyDXbuRTYEYi4K2RGArOhE5RCMZYFk7_eo4",
+        authDomain: "m-commerce-7f35b.firebaseapp.com",
+        databaseURL: "https://m-commerce-7f35b.firebaseio.com",
+        projectId: "m-commerce-7f35b",
+        storageBucket: "m-commerce-7f35b.appspot.com",
+        messagingSenderId: "223447659597",
+        appId: "1:223447659597:web:65e690fc71be14ac6c9804",
+        measurementId: "G-K37YV1YNV6"
+    };
+    firebase.initializeApp(firebaseConfig);
+</script>
+
+<body style="background-color: rgb(255, 255, 128);display:none;" onload="init()">
 
     <div class="container p-5">
         <div class="card">
@@ -21,6 +41,9 @@
                 <h1 class="display-4"><b><i>Sign Up</i></b></h1>
             </div>
             <div class="card-body">
+                <div class="alert alert-danger" id="alert" style="display: none;">
+                    <strong>Error!</strong> Please Fill all the fields
+                </div>
                 <form id="form">
                     <div class="form-group">
                         <input type="email" maxlength="30" class="form-control" id="email" placeholder="Email" name="email" required>
@@ -58,27 +81,6 @@
 
 </body>
 
-<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-analytics.js"></script>
-<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-storage.js"></script>
-
-<script>
-    var firebaseConfig = {
-        apiKey: "AIzaSyDXbuRTYEYi4K2RGArOhE5RCMZYFk7_eo4",
-        authDomain: "m-commerce-7f35b.firebaseapp.com",
-        databaseURL: "https://m-commerce-7f35b.firebaseio.com",
-        projectId: "m-commerce-7f35b",
-        storageBucket: "m-commerce-7f35b.appspot.com",
-        messagingSenderId: "223447659597",
-        appId: "1:223447659597:web:65e690fc71be14ac6c9804",
-        measurementId: "G-K37YV1YNV6"
-    };
-    firebase.initializeApp(firebaseConfig);
-    firebase.analytics();
-</script>
-
 <script>
     function ValidateEmail(mail) {
         var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -102,7 +104,7 @@
         }
         if (pass != confirm) {
             $("#confirm_password").addClass("is-invalid");
-            return flase;
+            return false;
         } else {
             $("#confirm_password").removeClass("is-invalid");
             $("#confirm_password").addClass("is-valid");
@@ -135,8 +137,24 @@
         }
     }
 
+    function init() {
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                if (sessionStorage.getItem("Now") === null) {
+                    window.location = "user_home_page.html";
+                } else {
+                    sessionStorage.removeItem("Now");
+                }
+            } else {
+                $(document.body).css("display", "block");
+            }
+        });
+    }
+
     function sign_up() {
         if (ValidateEmail() && vaidate_companyname() && validate_password() && validate_phone()) {
+            var email = $("#email").val();
+            var password = $("#password").val();
             firebase.auth().createUserWithEmailAndPassword(email, password)
                 .catch(function(error) {
                     // Handle Errors here.
@@ -149,8 +167,26 @@
                     }
                     console.log(error);
                 });
+
+            firebase.auth().onAuthStateChanged(function(user) {
+                sessionStorage.setItem("Now", 1);
+                if (user) {
+                    var database = firebase.database();
+                    var name = $("#company_name").val();
+                    var email = $("#email").val();
+                    var phone = $("#ph_no").val();
+                    var userId = firebase.auth().currentUser.uid;
+                    database.ref('users/Vendors/' + userId).set({
+                        companyname: name,
+                        email: email,
+                        phone: phone
+                    }).then((result) => {
+                        window.location = "user_home_page.html";
+                    })
+                }
+            });
         } else {
-            alert("Please fill all the details correctly");
+            $("#alert").css("display", "block");
         }
     }
 </script>
