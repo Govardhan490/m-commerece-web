@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Home</title>
+    <title>Add</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
@@ -47,7 +47,7 @@
     <div class="container-fluid pt-1">
         <div class="card">
             <div class="card-header p-3" style="text-align:center;display:inline;">
-                <h1 style="font-family: Amita;"><b><i>Home Page</i></b></h1>
+                <h1 style="font-family: Amita;"><b><i>Add</i></b></h1>
                 <button type="button" onclick="time_out()" class="btn btn-danger" style="float: right;">Log Out</button>
                 <ul class="d-flex justify-content-center row list-group list-group-horizontal" style="text-align: center;margin:auto;">
                     <li class="col-sm-3 list-group-item" id='user_name'><b>Name : </b></li>
@@ -55,19 +55,52 @@
                     <li class="col-sm-3 list-group-item" id='user_ph'><b>Ph : </b></li>
                 </ul>
             </div>
-            <div class="card-body">
-                <div class="alert alert-success" id="success" style="display: none;">
-                    <strong>Oops!</strong> Some Error happened please refresh the page;
+            <div class="card-body row">
+                <div class="col-sm-12">
+                    <div class="alert alert-danger" id="alert" style="display: none;">
+                        <strong>Error!</strong> Please Fill all the fields correctly.
+                    </div>
+                    <form id="form">
+                        <select id="category" class="custom-select">
+                            <option value='' disabled selected>Category</option>
+                            <option value="Mobiles">Mobiles</option>
+                            <option value="Computers">Computers</option>
+                            <option value="TV">TV</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Books">Books</option>
+                        </select>
+                        <br><br>
+                        <div class="row">
+                            <div class="col">
+                                <input type="text" id="product_name" maxlength="100" class="form-control" placeholder="Product Name">
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="col">
+                                <input type="number" min="0" id="price" class="form-control" placeholder="Price">
+                            </div>
+                            <div class="col">
+                                <input type="number" min="0" id="available" class="form-control" placeholder="No of Items Available">
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="col">
+                                <Textarea id="description" class="form-control" rows="5" placeholder="Product Description"></Textarea>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="photo" accept="image/png, image/jpeg">
+                            <label class="custom-file-label" for="photo">Choose Photo (jpeg, png)</label>
+                        </div>
+                        <br><br>
+                        <button type="button" onclick="add_product()" class="btn btn-primary">Add</button>
+                    </form>
                 </div>
-                <div class="alert alert-danger" id="alert" style="display: none;">
-                    <strong>Oops!</strong> Some Error happened please refresh the page;
-                </div>
+
                 <br>
-                <div class="list-group">
-                    <a href="add_items.html" class="list-group-item list-group-item-action" style="color: black;">Add Item</a>
-                    <a href="view_item.html" class="list-group-item list-group-item-action" style="color: black;">View Items</a>
-                    <a href="update_item.html" class="list-group-item list-group-item-action" style="color: black;">Update Availability of Items</a>
-                </div>
             </div>
         </div>
     </div>
@@ -77,6 +110,11 @@
 
 
 <script>
+    $(".custom-file-input").on("change", function(event) {
+        var fileName = $(this).val().split("\\").pop();
+        $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+    });
+
     function time_out() {
         if (firebase.auth().currentUser) {
             firebase.auth().signOut();
@@ -116,6 +154,126 @@
             $("#user_ph").append("<b>" + sessionStorage.getItem("phone") + "<b>");
         }
     });
+
+    function categoty_validate() {
+        if ($("#category").val() != null) {
+            $("#category").removeClass("is-invalid");
+            $("#category").addClass("is-valid");
+            return true;
+        } else {
+            $("#category").removeClass("is-valid");
+            $("#category").addClass("is-invalid");
+            return false;
+        }
+    }
+
+    function name_validate(id) {
+        if ($("#" + id).val() != "") {
+            $("#" + id).removeClass("is-invalid");
+            $("#" + id).addClass("is-valid");
+            return true;
+        } else {
+            $("#" + id).removeClass("is-valid");
+            $("#" + id).addClass("is-invalid");
+            return false;
+        }
+    }
+
+    function price_validate(id) {
+        if ($("#" + id).val() != "" && parseInt($("#" + id).val()) >= 0) {
+            $("#" + id).removeClass("is-invalid");
+            $("#" + id).addClass("is-valid");
+            return true;
+        } else {
+            $("#" + id).removeClass("is-valid");
+            $("#" + id).addClass("is-invalid");
+            return false;
+        }
+    }
+
+    function photo_validate() {
+        if ($('#photo').val() != "") {
+            $("#photo").removeClass("is-invalid");
+            $("#photo").addClass("is-valid");
+            return true;
+        } else {
+            $("#photo").removeClass("is-valid");
+            $("#photo").addClass("is-invalid");
+            return false;
+        }
+    }
+
+    function add_product() {
+        if (categoty_validate() && name_validate("product_name") && price_validate("price") && price_validate("available") && name_validate("description") && photo_validate()) {
+            var no_items;
+            var category = $("#category").val();
+            var name = $("#product_name").val();
+            var price = $("#price").val();
+            var desc = $("#description").val();
+            var photo = $("#photo").val();
+            var avail = $("#available").val();
+            var userId = firebase.auth().currentUser.uid;
+            var ref = firebase.database().ref('/users/Items/' + category + '/No').once('value').then(function(snapshot) {
+                    no_items = parseInt(snapshot.val());
+                    var file_name = "";
+                    var extension = photo.split(".");
+                    var ext = extension[extension.length - 1];
+                    if (no_items < 10) {
+                        file_name = category + "00" + (no_items + 1);
+                    } else {
+                        file_name = category + "0" + (no_items + 1);
+                    }
+                    var photo_ob;
+                    var x = document.getElementById("photo");
+                    photo_ob = x.files[0];
+                    var storage = firebase.storage();
+                    var storageRef = storage.ref(category + '/' + file_name + "." + ext);
+                    var uploadTask = storageRef.put(photo_ob);
+
+                    uploadTask.on('state_changed', function(snapshot) {
+                            switch (snapshot.state) {
+                                case firebase.storage.TaskState.PAUSED: // or 'paused'
+                                    console.log('Upload is paused');
+                                    break;
+                                case firebase.storage.TaskState.RUNNING: // or 'running'
+                                    console.log('Upload is running');
+                                    break;
+                            }
+                        },
+                        function(error) {
+                            console.log('Upload Failed');
+                        },
+                        function() {
+                            uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {});
+                            var ref = firebase.database().ref('/users/Items/' + category + "/" + file_name).update({
+                                product_name: name,
+                                price: price,
+                                available: avail,
+                                description: desc,
+                                photo: file_name + "." + ext,
+                                owner: userId
+                            })
+                            var ref = firebase.database().ref('/users/Vendors/' + userId + "/Items").update({
+                                [file_name]: avail
+                            })
+                            var ref = firebase.database().ref('/users/Items/');
+                            ref.child(category).update({
+                                'No': (no_items + 1)
+                            }).then((result) => {
+                                window.location = "user_home_page.html";
+                            })
+                        })
+
+                },
+                function(err) {
+                    console.log(err);
+                })
+
+
+        } else {
+            $("#alert").css("display", "block");
+        }
+    }
 </script>
 
 </html>

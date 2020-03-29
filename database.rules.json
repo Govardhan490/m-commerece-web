@@ -1,16 +1,6 @@
 {
-  "rules": {
-    "buisness": {
-      "$uid": {
+    "rules": {
         ".read": true,
-        ".write": "$uid === auth.uid"
-      }
-    },
-    "customer": {
-      "$uid": {
-        ".read": "$uid === auth.uid",
-        ".write": "$uid === auth.uid"
-      }
+        ".write": true
     }
-  }
 }
