@@ -205,6 +205,7 @@
 
     function add_product() {
         if (categoty_validate() && name_validate("product_name") && price_validate("price") && price_validate("available") && name_validate("description") && photo_validate()) {
+            var image_url;
             var no_items;
             var category = $("#category").val();
             var name = $("#product_name").val();
@@ -244,24 +245,25 @@
                             console.log('Upload Failed');
                         },
                         function() {
-                            uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {});
-                            var ref = firebase.database().ref('/users/Items/' + category + "/" + file_name).update({
-                                product_name: name,
-                                price: price,
-                                available: avail,
-                                description: desc,
-                                photo: file_name + "." + ext,
-                                owner: userId
-                            })
-                            var ref = firebase.database().ref('/users/Vendors/' + userId + "/Items").update({
-                                [file_name]: avail
-                            })
-                            var ref = firebase.database().ref('/users/Items/');
-                            ref.child(category).update({
-                                'No': (no_items + 1)
-                            }).then((result) => {
-                                window.location = "user_home_page.html";
-                            })
+                            uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                                var ref = firebase.database().ref('/users/Items/' + category + "/" + file_name).update({
+                                    product_name: name,
+                                    price: price,
+                                    available: avail,
+                                    description: desc,
+                                    photo: downloadURL,
+                                    owner: userId
+                                })
+                                var ref = firebase.database().ref('/users/Vendors/' + userId + "/Items").update({
+                                    [file_name]: avail
+                                })
+                                var ref = firebase.database().ref('/users/Items/');
+                                ref.child(category).update({
+                                    'No': (no_items + 1)
+                                }).then((result) => {
+                                    window.location = "user_home_page.html";
+                                })
+                            });
                         })
 
                 },
